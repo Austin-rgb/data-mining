@@ -1,0 +1,134 @@
+
+```rmd
+---
+title: "Introduction to Data Science"
+author: "Your Name"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+# Preface
+
+A brief overview of the course or book content.
+
+# Introduction
+
+This section introduces key concepts of data science, including its role and applications.
+
+# Data Wrangling and Extraction
+
+This section will focus on data wrangling techniques, especially reshaping data and web scraping using R.
+
+## Reshaping Data
+
+Describe the techniques used for reshaping datasets.
+
+## Joining Tables
+
+Show examples of how to join tables in R.
+
+```{r}
+# Example of joining two datasets
+library(dplyr)
+data1 <- data.frame(ID = 1:5, Value = c(10, 15, 20, 25, 30))
+data2 <- data.frame(ID = 3:7, Score = c(8, 6, 9, 7, 5))
+
+# Inner join (common IDs only)
+joined_data <- inner_join(data1, data2, by = "ID")
+joined_data
+```
+
+## Parsing Dates and Times
+
+Explain how dates and times are handled in R.
+
+```{r}
+# Example of date and time parsing in R
+library(lubridate)
+dates <- c("2023-09-19", "2023-08-14")
+parsed_dates <- ymd(dates)
+parsed_dates
+```
+
+# Extracting Data from the Web
+
+The web offers a vast amount of data that can be accessed using web scraping and API calls. This section focuses on using the `rvest` and `httr2` packages.
+
+## Scraping HTML with rvest
+
+```{r}
+# Loading required libraries
+library(tidyverse)
+library(rvest)
+
+# Scraping data from a Wikipedia page
+url <- paste0("https://en.wikipedia.org/w/index.php?title=",
+              "Gun_violence_in_the_United_States_by_state",
+              "&direction=prev&oldid=810166167")
+h <- read_html(url)
+
+# Extracting table from the page
+tab <- h %>% html_nodes("table") %>% html_table()
+tab[[1]] <- tab[[1]] %>% setNames(c("state", "population", "total", "murder_rate"))
+
+# Display the first few rows of the table
+head(tab[[1]])
+```
+
+## Working with JSON Data
+
+The `jsonlite` package makes it easy to work with JSON data in R.
+
+```{r}
+# Loading jsonlite package
+library(jsonlite)
+
+# Fetching Nobel Prize data from a JSON API
+nobel <- fromJSON("http://api.nobelprize.org/v1/prize.json")
+
+# Extracting details about Nobel laureates in literature in 1971
+nobel$prizes %>% 
+  filter(category == "literature" & year == "1971") %>%
+  pull(laureates) %>%
+  first() %>%
+  select(id, firstname, surname)
+```
+
+## API Integration with httr2
+
+```{r}
+# Loading httr2 package
+library(httr2)
+
+# Requesting data from the CDC API
+url <- "https://data.cdc.gov/resource/muzy-jte6.csv"
+response <- request(url) %>% req_perform()
+
+# Extracting the data as CSV
+library(readr)
+tab <- response %>% resp_body_string() %>% read_csv()
+
+# Display the first few rows of the data
+head(tab)
+```
+
+## Exercises
+
+Here are some exercises you can try:
+1. Scrape data from another website using `rvest`.
+2. Extract information from a different JSON API.
+3. Perform API requests using the `httr2` package with rate limits and error handling.
+
+---
+
+# Additional Tools
+
+Brief description of other data science productivity tools, such as `dplyr` for data manipulation or `ggplot2` for visualization.
+
+```
+
+### Explanation:
+1. **R Scripts**: The R scripts are the main focus here, showing examples of common operations like data joining, date parsing, web scraping, and API integration.
+2. **Exercises**: Added a section for practice exercises, encouraging users to try out R scripts on their own.
+3. **Output**: The output is set to `html_document` by default, which means you can knit the RMD file into an HTML report.
+

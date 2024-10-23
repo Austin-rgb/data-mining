@@ -1,0 +1,89 @@
+---
+title: "Chapter 5"
+author: "Akanksha Garlapati" 
+date: "`r Sys.Date()`" 
+output: word_document 
+---
+
+1.  **Find the ID of the novel "Pride and Prejudice"** using `str_detect`:
+
+    ```{r}
+    library(gutenbergr)
+    library(dplyr)
+    library(stringr)
+    pride_id <- gutenberg_metadata %>%
+      filter(str_detect(title, "Pride and Prejudice"))
+    pride_id
+    ```
+
+2.  **Use `gutenberg_works()`** to filter and find the correct ID for "Pride and Prejudice":
+
+    ```{r}
+    pride_id_filtered <- gutenberg_works() %>%
+      filter(str_detect(title, "Pride and Prejudice"))
+    pride_id_filtered
+    ```
+
+3.  **Download the text of "Pride and Prejudice"** using the `gutenberg_download` function:
+
+    ```{r}
+    book <- gutenberg_download(pride_id_filtered$gutenberg_id)
+    ```
+
+4.  **Create a tidy table of words** from the book text using the `tidytext` package:
+
+    ```{r}
+    library(tidytext)
+    words <- book %>%
+      unnest_tokens(word, text)
+    ```
+
+5.  **Add a column for the word number** (useful for later plotting):
+
+    ```{r}
+    words <- words %>%
+      mutate(word_number = row_number())
+    ```
+
+6.  **Remove stop words and numbers** from the `words` object using `anti_join`:
+
+    ```{r}
+    data("stop_words")
+    words_clean <- words %>%
+      anti_join(stop_words, by = "word") %>%
+      filter(!str_detect(word, "^\\d+$"))
+    ```
+
+7.  **Assign sentiment values** to each word using the AFINN lexicon:
+
+    ```{r}
+    afinn <- get_sentiments("afinn")
+    words_sentiment <- words_clean %>%
+      inner_join(afinn, by = "word")
+    ```
+
+8.  **Plot sentiment score versus word location** and add a smoother:
+
+    ```{r}
+    library(ggplot2)
+    ggplot(words_sentiment, aes(x = word_number, y = value)) +
+      geom_line() +
+      geom_smooth(method = "loess") +
+      labs(x = "Word Number", y = "Sentiment Score", title = "Sentiment Score vs Location")
+    ```
+
+9.  **Convert word locations to pages** (assuming 300 words per page) and plot average sentiment by page:
+
+    ```{r}
+    words_sentiment <- words_sentiment %>%
+      mutate(page = word_number %/% 300)
+
+    page_sentiment <- words_sentiment %>%
+      group_by(page) %>%
+      summarize(avg_sentiment = mean(value, na.rm = TRUE))
+
+    ggplot(page_sentiment, aes(x = page, y = avg_sentiment)) +
+      geom_line() +
+      geom_smooth(method = "loess") +
+      labs(x = "Page", y = "Average Sentiment", title = "Average Sentiment by Page")
+    ```

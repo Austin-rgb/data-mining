@@ -1,0 +1,101 @@
+# Installing RStudio
+
+### **1. Install R:**
+
+Before installing RStudio, you need to have R installed on your system.
+
+#### **For Ubuntu:**
+
+1.  Open the terminal.
+
+2.  Update your package list:
+
+    ``` bash
+    sudo apt update
+    ```
+
+3.  Install R:
+
+    ``` bash
+    sudo apt install r-base
+    ```
+
+    ![installing r-base](images/Screenshot_20240901_214027_Termux.jpg)
+
+4.  ![installing r-base](images/Screenshot_20240901_214117_Termux.jpg)
+
+#### **For Windows:**
+
+1.  Download the R installer from the [CRAN R Project website](https://cran.r-project.org/).
+2.  Run the installer and follow the on-screen instructions.
+
+#### **For macOS:**
+
+1.  Download the R installer for macOS from the [CRAN R Project website](https://cran.r-project.org/).
+2.  Run the installer and follow the on-screen instructions.
+
+### **2. Install RStudio:**
+
+Once R is installed, you can install RStudio.
+
+#### **For Ubuntu:**
+
+1.  Go to the [RStudio download page](https://rstudio.com/products/rstudio/download/#download).
+
+2.  Download the `.deb` package suitable for your Ubuntu version.
+
+    ![download rstudio](images/rstudio%20download.png)
+
+3.  Install the downloaded package using:
+
+    ``` bash
+    sudo dpkg -i rstudio-x.yy.zz-amd64.deb
+    ```
+
+4.  If you encounter dependency issues, run:
+
+    ``` bash
+    sudo apt --fix-broken install
+    ```
+
+5.  If your machine is not amd64 or x86_64 I.e it's maybe arm64, you'll need to download rstudio from a build site
+
+    ![downloading for arm64](images/rstudio%20for%20arm64-01.png)
+
+6.  Install the downloaded package using:
+
+    ``` bash
+    sudo dpkg -i rstudio-x.yy.zz-arm64.deb
+    ```
+
+#### **For Windows:**
+
+1.  Download the RStudio installer from the [RStudio download page](https://rstudio.com/products/rstudio/download/#download).
+2.  Run the installer and follow the on-screen instructions.
+
+#### **For macOS:**
+
+1.  Download the RStudio installer from the [RStudio download page](https://rstudio.com/products/rstudio/download/#download).
+2.  Open the downloaded `.dmg` file and drag the RStudio icon into your Applications folder.
+
+### **3. Launch RStudio:**
+
+After installation, you can launch RStudio from your applications menu (on Ubuntu and macOS) or from the Start menu (on Windows).
+
+![](images/rstudio%20console.png)
+
+![](images/rstudio%20console.png.png)
+
+![](images/rstudio%20terminal.png "terminal")
+
+![editor](images/rstudio%20editor.png)
+
+![files](images/rstudio%20files.png)
+
+## Installing Packages
+
+installing required packages for data mining
+
+![installing packages](images/Screenshot_20240901_231809_Termux.jpg)
+
+![installing packages](images/Screenshot_20240901_231819_Termux-02.jpg)

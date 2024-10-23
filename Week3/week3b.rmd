@@ -1,0 +1,218 @@
+---
+output:
+  word_document: default
+  html_document: default
+---
+
+title: "Chapter 3: Classification: Basic Concepts and Techniques" author: "Your Name" date: "`r Sys.Date()`" output: html_document ---
+
+# Classification: Basic Concepts and Techniques
+
+This chapter introduces decision trees for classification and discusses how models are built and evaluated. The corresponding chapter of the data mining textbook is available online: [Chapter 3: Classification: Basic Concepts and Techniques](link-to-textbook).
+
+## Packages Used in this Chapter
+
+```{r}
+pkgs <- c("caret", "FSelector", "lattice", "mlbench", 
+          "palmerpenguins", "party", "pROC", "rpart", "rpart.plot", 
+          "sampling", "tidyverse")
+pkgs_install <- pkgs[!(pkgs %in% installed.packages()[,"Package"])]
+if(length(pkgs_install)) install.packages(pkgs_install)
+```
+
+The packages used for this chapter are:
+
+-   **caret** (M. Kuhn 2023)
+-   **FSelector** (Romanski Kotthoff and Schratz 2023)
+-   **lattice** (Sarkar 2023)
+-   **mlbench** (Leisch and Dimitriadou 2024)
+-   **palmerpenguins** (Horst Hill and Gorman 2022)
+-   **party** (Hothorn et al. 2024)
+-   **pROC** (Robin et al. 2023)
+-   **rpart** (Therneau and Atkinson 2023)
+-   **rpart.plot** (Milborrow 2024)
+-   **sampling** (Tillé and Matei 2023)
+-   **tidyverse** (Wickham 2023c)
+
+A great cheat sheet for `caret` can be found [here](link-to-cheatsheet).
+
+## Basic Concepts
+
+Classification is a machine learning task where we learn a predictive function $y = f(x)$, where $x$ is the attribute set and $y$ is the class label. This is a **supervised learning** problem, where the class label is available in the training data.
+
+A related supervised learning problem is **regression**, where $y$ is a number instead of a label.
+
+## General Framework for Classification
+
+Supervised learning has two steps:
+
+1.  **Induction**: Train a model on **training data** with known class labels.
+2.  **Deduction**: Predict class labels for new data.
+
+We evaluate models on **test data** that does not overlap with the training data. The error on test data is called the **generalization error**.
+
+## The Zoo Dataset
+
+To demonstrate classification, we will use the Zoo dataset from the `mlbench` package.
+
+```{r}
+data(Zoo, package = "mlbench")
+head(Zoo)
+```
+
+We convert the data frame to a `tibble` from `tidyverse`:
+
+```{r}
+library(tidyverse)
+as_tibble(Zoo, rownames = "animal")
+```
+
+We will translate all `TRUE/FALSE` values into factors.
+
+```{r}
+Zoo <- Zoo |> 
+  mutate(across(where(is.logical), 
+                ~ factor(.x, levels = c("TRUE", "FALSE")))) |>
+  mutate(across(where(is.character), factor))
+
+summary(Zoo)
+```
+
+## Decision Tree Classifiers
+
+We'll use the `rpart` package to build a decision tree.
+
+```{r}
+library(rpart)
+tree_default <- rpart(type ~ ., data = Zoo)
+tree_default
+```
+
+We can plot the resulting tree:
+
+```{r}
+library(rpart.plot)
+rpart.plot(tree_default, extra = 2)
+```
+
+### Predictions for New Data
+
+Here's how to make predictions for a new animal:
+
+```{r}
+my_animal <- tibble(hair = TRUE, feathers = TRUE, eggs = FALSE, milk = TRUE, 
+                    airborne = TRUE, aquatic = FALSE, predator = TRUE,
+                    toothed = TRUE, backbone = TRUE, breathes = TRUE,
+                    venomous = FALSE, fins = FALSE, legs = 4, tail = TRUE, 
+                    domestic = FALSE, catsize = FALSE, type = NA)
+
+my_animal <- my_animal |> 
+  mutate(across(where(is.logical), 
+                ~ factor(.x, levels = c("TRUE", "FALSE"))))
+
+predict(tree_default, my_animal, type = "class")
+```
+
+## Model Evaluation
+
+We calculate accuracy and error of the model on the training data.
+
+```{r}
+pred <- predict(tree_default, Zoo, type = "class")
+confusion_table <- with(Zoo, table(type, pred))
+correct <- diag(confusion_table) |> sum()
+error <- sum(confusion_table) - correct
+accuracy <- correct / (correct + error)
+accuracy
+```
+
+We can also use the `caret` package for evaluation.
+
+```{r}
+library(caret)
+confusionMatrix(data = pred, reference = Zoo$type)
+```
+
+## Redoing the classification with iris dataset
+
+Here's the complete R code to perform the decision tree task using the **`iris`** dataset:
+
+### Load Required Libraries
+
+```{r}
+# Load necessary libraries
+library(rpart)
+library(rpart.plot)
+library(caret)
+```
+
+### 1. Load and Explore the Iris Dataset
+
+```{r}
+# Load the iris dataset
+data(iris)
+
+# View the structure of the dataset
+str(iris)
+
+# Display the first few rows of the dataset
+head(iris)
+```
+
+### 2. Build a Decision Tree
+
+```{r}
+# Build the decision tree model with rpart
+tree_iris <- rpart(Species ~ ., data = iris)
+
+# Print the tree structure
+print(tree_iris)
+```
+
+### 3. Plot the Decision Tree
+
+``` r
+# Plot the decision tree
+rpart.plot(tree_iris, extra = 2)
+```
+
+### 4. Make Predictions
+
+```{r}
+# Make predictions on the training data
+pred_iris <- predict(tree_iris, iris, type = "class")
+
+# View the first few predictions
+head(pred_iris)
+```
+
+### 5. Evaluate the Model
+
+```{r}
+# Calculate the confusion matrix and accuracy
+confusionMatrix(data = pred_iris, reference = iris$Species)
+```
+
+### 6. Hyperparameter Tuning (Optional)
+
+```{r}
+# Perform hyperparameter tuning using caret
+fit_iris <- train(Species ~ ., data = iris, method = "rpart", 
+                  trControl = trainControl(method = "cv", number = 10),
+                  tuneLength = 5)
+
+# Print the best model and accuracy
+print(fit_iris)
+
+# Plot the best tree from the tuning process
+rpart.plot(fit_iris$finalModel, extra = 2)
+```
+
+### Explanation of Steps:
+
+-   **Loading the dataset**: The iris dataset is built into R, so it can be accessed directly.
+-   **Building the decision tree**: `rpart` is used to create a decision tree based on the features (Sepal.Length, Sepal.Width, Petal.Length, Petal.Width) to predict the `Species`.
+-   **Plotting the tree**: `rpart.plot` is used to visualize the decision tree.
+-   **Making predictions**: The model predicts the species of flowers based on the tree.
+-   **Evaluating the model**: `confusionMatrix` from the `caret` package calculates the accuracy and provides a confusion matrix.
+-   **Hyperparameter tuning**: (Optional) The `train` function from `caret` performs cross-validation to find the best tree parameters.

@@ -1,0 +1,140 @@
+---
+title: "Titanic Survival Prediction"
+author: "Akanksha Garlapati"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+# Load required libraries
+library(tidyverse)
+library(caret)
+library(randomForest)
+library(class)
+library(titanic)
+knitr::opts_chunk$set(echo = TRUE, global = TRUE)
+```
+
+### 1. Load and Prepare the Data
+
+The first step is to load and preprocess the Titanic data.
+
+```{r}
+# Load the Titanic dataset
+data("titanic_train")
+titanic <- titanic_train
+
+# Check the structure of the data
+str(titanic)
+
+# Data cleaning: Remove rows with missing values and select relevant columns
+titanic_clean <- titanic %>%
+  select(Survived, Pclass, Sex, Age, SibSp, Parch, Fare) %>%
+  drop_na()
+
+# Convert 'Survived' and 'Sex' to factors
+titanic_clean$Survived <- factor(titanic_clean$Survived)
+titanic_clean$Sex <- factor(titanic_clean$Sex, levels = c("male", "female"))
+
+# Split the data into training and test sets
+set.seed(123)
+trainIndex <- createDataPartition(titanic_clean$Survived, p = 0.7, list = FALSE)
+trainData <- titanic_clean[trainIndex, ]
+testData <- titanic_clean[-trainIndex, ]
+```
+
+### 2. Logistic Regression
+
+We will first use Logistic Regression to predict survival.
+
+```{r}
+# Train logistic regression model
+logistic_model <- train(Survived ~ ., data = trainData, method = "glm", family = "binomial")
+
+# Make predictions
+logistic_preds <- predict(logistic_model, newdata = testData)
+
+# Evaluate the accuracy
+logistic_accuracy <- mean(logistic_preds == testData$Survived)
+logistic_accuracy
+```
+
+### 3. Random Forest
+
+Now, let's apply the Random Forest algorithm.
+
+```{r}
+# Train Random Forest model
+rf_model <- randomForest(Survived ~ ., data = trainData, ntree = 100)
+
+# Make predictions
+rf_preds <- predict(rf_model, newdata = testData)
+
+# Evaluate the accuracy
+rf_accuracy <- mean(rf_preds == testData$Survived)
+rf_accuracy
+```
+
+### 4. k-Nearest Neighbors (kNN)
+Lastly, we use k-Nearest Neighbors for prediction.
+
+```{r}
+# Normalize the numeric variables for kNN
+normalize <- function(x) {
+    return((x - min(x)) / (max(x) - min(x)))
+}
+
+# Normalize the numeric columns
+trainData_knn <- trainData %>%
+    mutate_at(vars(Age, SibSp, Parch, Fare), normalize)
+
+testData_knn <- testData %>%
+    mutate_at(vars(Age, SibSp, Parch, Fare), normalize)
+
+# Convert 'Sex' to numeric (0 for male, 1 for female)
+trainData_knn$Sex <- as.numeric(trainData_knn$Sex) - 1
+testData_knn$Sex <- as.numeric(testData_knn$Sex) - 1
+
+# Check for any remaining NAs
+sum(is.na(trainData_knn)) 
+sum(is.na(testData_knn))
+
+# Train the kNN model (k = 5)
+knn_preds <- knn(
+    train = trainData_knn[, c("Pclass", "Sex", "Age", "SibSp", "Parch", "Fare")],
+      test = testData_knn[, c("Pclass", "Sex", "Age", "SibSp", "Parch", "Fare")],
+      cl = trainData_knn$Survived, 
+      k = 5
+    )
+
+# Evaluate the accuracy of the kNN model
+knn_accuracy <- mean(knn_preds == testData_knn$Survived)
+knn_accuracy
+```
+
+
+### 5. Model Comparison
+
+Now, we can compare the accuracies of the three models.
+
+```{r}
+# Compare accuracies
+results <- data.frame(
+  Model = c("Logistic Regression", "Random Forest", "k-Nearest Neighbors"),
+  Accuracy = c(logistic_accuracy, rf_accuracy, knn_accuracy)
+)
+
+results
+```
+
+### 6. Interpret the Results
+
+Interpret the results of the three models, including which one performed the best.
+
+```{r}
+# Plot accuracy comparison
+ggplot(results, aes(x = Model, y = Accuracy, fill = Model)) +
+  geom_bar(stat = "identity") +
+  ylim(0, 1) +
+  ggtitle("Accuracy of Different Classification Models") +
+  theme_minimal()
+```

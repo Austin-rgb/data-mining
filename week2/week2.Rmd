@@ -1,0 +1,257 @@
+---
+title: "??? Introduction to data visualizations in R ???"
+author: "Akanksha Garlapati"
+date: "`r Sys.Date()`"
+output:
+  word_document: 
+    toc: true
+    fig_caption: true
+    keep_md: true
+    fig_width: 7
+    fig_height: 5.5
+  pdf_document: default
+  html_document: 
+    toc: true
+    fig_caption: true
+    number_sections: true
+---
+
+# Introduction to data visualizations in R
+
+## Loading packages and datasets
+
+```{r}
+library (tidyverse)
+library (modeldata)
+
+library(readxl)
+my_dataset <- read_excel("Animals_and_share _of_US_adults.xlsx")
+View(my_dataset)
+```
+
+## Using scatter plot
+
+We specify dataset to be plotted in ggplot, and the variables and other aesthetics in aes
+
+```{r}
+ggplot(my_dataset, aes(x=Male,
+    y=Female))
+```
+
+We the add the specification for the type of plot with geom\_\*
+
+```{r}
+ggplot (my_dataset, aes(x=Male,
+    y = Female ))+
+    geom_point()
+```
+
+We can then add other things like labels
+
+```{r}
+ggplot (my_dataset, aes(x = Male,
+    y = Female ))+
+    geom_point()+
+    labs(x="Male",
+        y="Female ",
+        title="Cricket Chips",
+        caption= "Source: Mcdonald (2009)")
+```
+
+### Specifying other aesthetics
+
+Add color with a variable
+
+```{r}
+ggplot (my_dataset, aes(x=Male,
+    y=Female,
+    color=Animal ))+
+    geom_point()+
+    labs(x="Male",
+        y="Female",
+        title="Cricket Chips",
+        caption= "Source: Mcdonald (2009)")
+```
+
+Label color labels
+
+```{r}
+ggplot (my_dataset, aes(x=Male,
+    y=Female,
+    color =Animal))+
+    geom_point()+
+    labs(x="Male",
+        y="Female",
+        color="Animal",
+        title="Cricket Chips",
+        caption= "Source: Mcdonald (2009)")
+```
+
+Add color scaling
+
+```{r}
+ggplot (my_dataset, aes(x=Male,
+    y=Female,
+    color =Animal))+
+    geom_point()+
+    labs(x="Male",
+        y="Female",
+        color="Animal",
+        title="Cricket Chips",
+        caption= "Source: Mcdonald (2009)")
+        #  not found: # soace_color_brewer(palette="Dark2")
+```
+
+### Modifying basic properties
+
+Change plot color
+
+```{r}
+ggplot (my_dataset, aes(x=Male,
+    y=Female,
+    color =Animal))+
+    geom_point(color="Red")+
+    labs(x="Male",
+        y="Female",
+        color="Animal",
+        title="Cricket Chips",
+        caption= "Source: Mcdonald (2009)")
+        # soace_color_brewer(palette="Dark2")
+```
+
+change plot size
+
+```{r}
+ggplot (my_dataset, aes(x=Male,y=Female,color =Animal))+
+    geom_point(size=2)+
+    labs(x="Male",
+        y="Female",
+        color="Animal",
+        title="Cricket Chips",
+        caption= "Source: Mcdonald (2009)")
+        # soace_color_brewer(palette="Dark2")
+```
+
+Adding another plot layer
+
+```{r}
+ggplot (my_dataset, aes(x=Male,
+    y=Female,
+    color =Animal))+
+    geom_point()+
+    geom_smooth()+
+    labs(x="Male",
+        y="Female",
+        color="Animal",
+        title="Cricket Chips",
+        caption= "Source: Mcdonald (2009)")
+    # soace_color_brewer(palette="Dark2")
+```
+
+Add geom_smooth method
+
+```{r}
+ggplot (my_dataset, aes(x=Male,
+    y=Female,
+    color =Animal))+
+    geom_point()+
+    geom_smooth(method="lm")+
+    labs(x="Male",
+        y="Female",
+        color="Animal",
+        title="Cricket Chips",
+        caption= "Source: Mcdonald (2009)")
+    # soace_color_brewer(palette="Dark2")
+```
+
+Remove geom_smooth error approximation
+
+```{r}
+ggplot (my_dataset, aes(x=Male,
+    y=Female,
+    color =Animal))+
+    geom_point()+
+    geom_smooth(method="lm",
+        se=FALSE)+
+    labs(x="Male",
+        y="Female",
+        color="Animal",
+        title="Cricket Chips",
+        caption= "Source: Mcdonald (2009)")
+    # soace_color_brewer(palette="Dark2")
+```
+
+## Other plots
+
+### Histogram
+
+```{r}
+ggplot (my_dataset, aes(x=Male,
+    color =Animal))+
+    geom_histogram()
+    
+```
+
+Modifying Histogram bins
+
+```{r}
+ggplot (my_dataset, aes(x=Male))+
+    geom_histogram(bins=15)
+    
+```
+
+### Frequency polygon
+
+```{r}
+ggplot (my_dataset, aes(x=Male))+
+    geom_freqpoly(bins=15)
+    
+```
+
+### Bars
+
+```{r}
+ggplot (my_dataset, aes(x=Animal))+
+    geom_bar(color="black",
+        fill="lightblue")
+    
+```
+
+Coloring with classes
+
+```{r}
+ggplot (my_dataset, aes(x=Animal,
+    fill=Animal))+
+    geom_bar()
+    # soace_fill_brewer(palette="Dark2")
+    
+```
+
+Remove legend
+
+```{r}
+ggplot (my_dataset, aes(x=Animal,
+    fill=Animal))+
+    geom_bar()
+    # soace_fill_brewer(palette="Dark2")
+    
+```
+
+### Box plot
+
+```{r}
+ggplot (my_dataset, aes(x=Animal,y=Female))+
+    geom_boxplot()
+    # soace_fill_brewer(palette="Dark2")
+    
+```
+
+## Faceting
+
+```{r}
+ggplot (my_dataset, aes(x=Male))+
+    geom_histogram(bins=15)+
+    facet_wrap(~Animal)
+    # soace_fill_brewer(palette="Dark2")
+    
+```
